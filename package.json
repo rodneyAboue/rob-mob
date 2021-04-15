@@ -1,0 +1,16 @@
+{
+  "name": "node",
+  "version": "1.0.0",
+  "description": "Copier les fichiers dans un dossier robot_m1",
+  "main": "robot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "replaceall": "^0.1.6",
+    "serialport": "^9.0.7",
+    "socket.io": "^4.0.1"
+  }
+}

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>XBEE</title>
+    <link
+      href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+      rel="stylesheet"
+    />
+    <meta charset="utf-8" />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"
+      defer
+    ></script>
+  </head>
+  <body class="h-screen text-gray-500 bg-green-500">
+    <div
+      class="flex gap-x-10 h-screen justify-center flex-row-reverse"
+      style="width: 80%; margin: auto"
+    >
+      <div class="w-1/4 flex flex-col items-center">
+        <h1 class="font-bold text-4xl">ROB MOB</h1>
+
+        <div class="mt-10 flex flex-col items-end">
+          <p class="text-white font-semibold mb-3">Vitesse de déplacement</p>
+          <input
+            type="number"
+            class="px-2 py-1 border rounded w-full"
+            id="speed"
+            value="10"
+          />
+	  <div class="mt-10 flex gap-x-5">
+		<button
+		    id="scen1"
+		    class="bg-white text-black border border-white rounded mt-3 px-2 py-1"
+		  >
+		    Scénario 1
+		  </button>
+		  <button
+		    id="scen2"
+		    class="bg-white text-black border border-white rounded mt-3 px-2 py-1"
+		  >
+		    Scénario 2
+		  </button>
+	  </div>
+        </div>
+      </div>
+      <div class="flex-1 text-white flex flex-col gap-y-5">
+        <div class="border-b">
+          <p class="mb-4">Entrez les commandes</p>
+          <textarea
+            id="allCommandsBox"
+            rows="5"
+            class="w-full bg-white text-black border border-gray-500 rounded px-2 py-1"
+          ></textarea>
+          <button
+            id="runAllBtn"
+            class="bg-white text-black border border-white rounded mt-3 px-2 py-1"
+          >
+            <i class="fab fa-rust"></i>
+            Téléverser
+          </button>
+        </div>
+
+        <div class="flex gap-x-4">
+          <button
+            class="bg-white text-black border border-white rounded mt-3 px-2 py-1"
+          >
+            <i class="fas fa-car-side mr-2"></i>
+            Mode automatique
+          </button>
+          <button
+	    id="stopBtn"
+            class="bg-red-500 text-white border border-red-500 rounded mt-3 px-2 py-1"
+          >
+            <i class="fas fa-hand-paper"></i>
+            Arrêter
+          </button>
+        </div>
+
+        <div class="bg-white flex-1" id="land">
+          <div
+            id="car"
+            class="absolute bg-black text-white h-10 w-10 rounded flex items-center justify-center"
+          >
+            <i class="fas fa-car-side"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="absolute w-20 gap-x-2"
+      style="
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        right: 20%;
+        bottom: 5%;
+      "
+    >
+      <div></div>
+      <button
+        class="bg-white text-black border border-white rounded mt-3 h-16 w-16"
+        id="upBtn"
+      >
+        <i class="fas fa-arrow-up"></i>
+      </button>
+      <div></div>
+      <button
+        class="bg-white text-black border border-white rounded mt-3 h-16 w-16"
+        id="leftBtn"
+      >
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <button
+        class="bg-white text-black border border-white rounded mt-3 h-16 w-16"
+        id="downBtn"
+      >
+        <i class="fas fa-arrow-down"></i>
+      </button>
+      <button
+        class="bg-white text-black border border-white rounded mt-3 h-16 w-16"
+        id="rightBtn"
+      >
+        <i class="fas fa-arrow-right"></i>
+      </button>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+
+      const car = document.querySelector("#car");
+      const land = document.querySelector("#land");
+
+      // On récupère les boutons
+      const upBtn = document.querySelector("#upBtn");
+      const downBtn = document.querySelector("#downBtn");
+      const leftBtn = document.querySelector("#leftBtn");
+      const rightBtn = document.querySelector("#rightBtn");
+      const stopBtn = document.querySelector("#stopBtn");
+      const runAllBtn = document.querySelector("#runAllBtn");
+
+      const scen1 = document.querySelector("#scen1");
+      const scen2 = document.querySelector("#scen2");
+
+      const allCommandsBox = document.querySelector("#allCommandsBox");
+
+      const {
+        width: LAND_WIDTH,
+        height: LAND_HEIGHT,
+        top: LAND_TOP,
+        left: LAND_LEFT,
+      } = land.getBoundingClientRect();
+
+      // On positionne la voiture au milieu de la case au début.
+      car.style.left = LAND_LEFT + LAND_WIDTH / 2 + "px";
+      car.style.top = LAND_TOP + LAND_HEIGHT / 2 + "px";
+
+      // On associe les évènements.
+      upBtn.addEventListener("click", () => moveUp());
+      downBtn.addEventListener("click", () => moveDown());
+      leftBtn.addEventListener("click", () => moveLeft());
+      rightBtn.addEventListener("click", () => moveRight());
+      stopBtn.addEventListener("click", stop);
+
+      runAllBtn.addEventListener("click", () =>
+        socket.emit("command:run", allCommandsBox.value)
+      );
+
+      scen1.addEventListener("click", () => {
+	socket.emit("command:run",
+	"[don]"+
+	"[mr 100][ml 100][w 2000][mr 0][ml 0][w 1000]"+
+	"[mr -100][ml 100][w 1000][mr 0][ml 0]"
+	);
+      });
+
+      window.addEventListener("keydown", ({ key }) => {
+        switch (key) {
+          case "ArrowUp":
+            moveUp();
+            break;
+          case "ArrowDown":
+            moveDown();
+            break;
+          case "ArrowLeft":
+            moveLeft();
+            break;
+          case "ArrowRight":
+            moveRight();
+            break;
+          case "space":
+	    stop();
+            break;
+          default:
+            break;
+        }
+      });
+
+      socket.on("command:retrieve", (commands) => {});
+
+      function move(direction, coord) {
+        let speed = parseInt(document.querySelector("#speed").value);
+        let { left: x, top: y } = car.getBoundingClientRect();
+
+        if (isNaN(speed)) speed = 5;
+
+        if (coord === "x") {
+          if (direction === -1 && x < LAND_LEFT) speed = 0;
+          else if (direction === 1 && x > LAND_WIDTH) speed = 0;
+
+          car.style.left = x + speed * direction + "px";
+        } else if (coord === "y") {
+          if (direction === -1 && y < LAND_TOP) speed = 0;
+          else if (direction === 1 && y > LAND_HEIGHT) speed = 0;
+
+          car.style.top = y + speed * direction + "px";
+        }
+      }
+
+      function moveUp() {
+        socket.emit("command:run", "[don][mr 100][ml 100][w 500][mr 0][ml 0]");
+        move(-1, "y");
+      }
+
+      function moveDown() {
+        socket.emit("command:run", "[don][mr -100][ml -100][w 500][mr 0][ml 0]");
+        move(1, "y");
+      }
+
+      function stop() {
+	socket.emit("command:run", "[don][mr 0][ml 0]");
+      }
+
+      function moveLeft() {
+	socket.emit("command:run", "[don][mr 100][ml -100][w 500][mr 0][ml 0]");
+        move(-1, "x");
+      }
+
+      function moveRight() {
+	socket.emit("command:run", "[don][mr -100][ml 100][w 500][mr 0][ml 0]");
+        move(1, "x");
+      }
+    </script>
+  </body>
+</html>
