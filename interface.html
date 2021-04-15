@@ -171,14 +171,36 @@
         socket.emit("command:run", allCommandsBox.value)
       );
 
-      scen1.addEventListener("click", () => {
-	socket.emit("command:run",
-	"[don]"+
-	"[mr 100][ml 100][w 2000][mr 0][ml 0][w 1000]"+
-	"[mr -100][ml 100][w 1000][mr 0][ml 0]"
-	);
+    /*  scen1.addEventListener("click", () => {
+	      socket.emit("command:run",
+	        "[don]"+
+	        "[mr 100][ml 100][w 2000][mr 0][ml 0][w 1000]"+
+	        "[mr -100][ml 100][w 1000][mr 0][ml 0]"
+	      );
       });
-
+    */
+    scen1.addEventListener("click", () => {
+        socket.emit("command:run",
+          "[don]" +
+          "[s 90]" +
+          "[dist]" + // 1ere mesure souvent fausse
+          "[:b0]" +
+          "[w 200]" + // attente 200 ms
+          "[dist]" +  // mesure de distance
+          "[pdist]" + // envoi de l'état sur XBee (distance, ...)
+          "[if mm < 100 b2]" + // arrêt si dist < distmax
+          "[ml 100]" + // moteur gauche
+          "[mr 100]" + // moteur droit
+          "[g b0]" +
+          "[:b2]" +
+          "[ml 0]" +
+          "[mr 0]" +
+          "[w 1000]" + // on attend que les moteurs s'arrêtent
+          "[dist]" + // mesure de distance
+          "[fx]" + // pour signaler la fin d'exécution (variable exec mise à 0)
+          "[pdist]" // envoi de l'état (distance, valeur de exec, ...)
+        );
+      });
       window.addEventListener("keydown", ({ key }) => {
         switch (key) {
           case "ArrowUp":
