@@ -45,6 +45,7 @@ io.on('connection', (socket) => {
 
     socket.on('command:run', (commands) => {
         xbee.port.write(commands + "\n");
+console.log(commands.length);
         io.emit("command:retrieve", commands)
     });
 

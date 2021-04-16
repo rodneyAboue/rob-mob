@@ -1,0 +1,69 @@
+ scen1.addEventListener("click", () => {
+        socket.emit("command:run",
+	  "[don]" +
+          "[dist]" +
+          "[:boucle]" +
+	  "[s 55]" +
+	  "[w 2000]" + 
+          "[dist]" +  // mesure de distance
+          "[pdist]" + // envoi de l'état sur XBee (distance, ...)
+          "[if mm < 1000 fin]" + //la voie  n'est pas libre(face a un mur )   
+	  "[s 360 ]" +
+	  "[dist]" +  // mesure de distance
+          "[pdist]" + // envoi de l'état sur XBee (distance, ...)
+	  "[w 1000]" +
+          "[s 55 ]" +
+          "[if mm < 300 tourne_a_droite ]" +
+	  "[if mm > 600 tourne_a_gauche ]" +
+	  "[mr 100]" +
+	  "[ml 100]" +
+          "[w 1000]" +
+	  "[mr 0]" +
+	  "[ml 0]" +
+	  "[w 1000]" +
+	  "[g boucle]" +
+	  "[:tourne_a_droite]" +
+	  "[mr -100]" +
+	  "[ml 100]" +
+	  "[w 500]" +
+	  "[if 1 == 1 boucle]" +
+	  "[g tourne_a_droite]" +
+	  "[:tourne_a_gauche]" +
+	  "[mr -100]" +
+	  "[ml 100]" +
+	  "[w 500]" +
+	  "[if 1 == 1 boucle ]" +
+	  "[g tourne_a_gauche]" +
+	  "[:fin]" +
+          "[ml 0]" +
+          "[mr 0]" +
+          "[w 1000]" + 
+          "[dist]"
+          "[fx]" + 
+          "[pdist]" 
+	  
+        );
+      });
+
+
+//          "[if mm < 300 tourne_a_droite ]" +
+//	  "[if mm > 600 tourne_a_gauche ]" +
+	  "[mr 100]" +
+	  "[ml 100]" +
+          "[w 1000]" +
+	  "[mr 0]" +
+	  "[ml 0]" +
+	  "[w 1000]" +
+	  "[g boucle]" +
+/**	  "[:tourne_a_droite]" +
+	  "[mr -100]" +
+	  "[ml 100]" +
+	  "[w 500]" +
+	  "[boucle]" +
+	  "[g tourne_a_droite]" +
+	  "[:tourne_a_gauche]" +
+	  "[mr -100]" +
+	  "[ml 100]" +
+	  "[w 500]" +
+	  "[boucle ]" +
+ **/	  "[g tourne_a_gauche]" +

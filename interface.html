@@ -188,14 +188,19 @@
           "[w 200]" + // attente 200 ms
           "[dist]" +  // mesure de distance
           "[pdist]" + // envoi de l'état sur XBee (distance, ...)
-          "[if mm < 100 b2]" + // arrêt si dist < distmax
+          "[if mm < 500 b2]" + // arrêt si dist < distmax
           "[ml 100]" + // moteur gauche
           "[mr 100]" + // moteur droit
           "[g b0]" +
           "[:b2]" +
-          "[ml 0]" +
-          "[mr 0]" +
+          "[ml -100]" +
+          "[mr 100]" +
           "[w 1000]" + // on attend que les moteurs s'arrêtent
+"[ml -100]" +
+          "[mr 100]" +
+          "[w 1000]" + 
+"[mr 100][ml 100]" +
+"[w 2000]" +
           "[dist]" + // mesure de distance
           "[fx]" + // pour signaler la fin d'exécution (variable exec mise à 0)
           "[pdist]" // envoi de l'état (distance, valeur de exec, ...)
